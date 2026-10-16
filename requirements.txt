@@ -1,0 +1,18 @@
+# Derived from the imports in preprocessing/, silver_standard/, models/ and analysis/.
+# Versions taken from the local Python 3.11 (conda base) environment.
+pandas==2.2.3
+numpy==1.26.4
+scipy==1.13.1
+scikit-learn==1.5.1
+matplotlib==3.9.2
+xgboost==3.2.0
+joblib==1.4.2
+krippendorff==0.8.2
+tqdm==4.66.5
+# needed by pandas.read_excel (analysis/plot_deberta_results.py, analysis/gold_vs_silver_agreement.py)
+openpyxl==3.1.5
+
+# DeBERTa models were trained on Google Colab; the local versions differ,
+# so these are left unpinned.
+torch
+transformers

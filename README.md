@@ -1,11 +1,89 @@
 # KEYSCORE — Keystroke-Enhanced Automated Essay Scoring
 
+Code for the paper *"KEYSCORE — Keystroke-enhanced Automated Essay Scoring"* (BEA 2026),
+based on the PISA 2025 FLA writing process dataset (keystroke logs, Chat / NoChat condition).
+
+**Data:** not included. The data may not be published before September 2027 and is available
+on request until then (schaller@leibniz-ipn.de). See [`data/README.md`](data/README.md) for the
+expected folder structure.
+
+## Repository structure
+
+```
+├── preprocessing/     keystroke features, text snapshots at 5/10/15/20/25 min, splits, hybrid set
+├── silver_standard/   analysis of the MEWS linear-regression silver standard
+├── models/
+│   ├── xgboost/       process-feature models (XGBoost ALL / LEN / NOLEN) and OLS baselines
+│   ├── deberta/       DeBERTa-v3 FULL and HYBRID (+ evaluation per time point)
+│   └── combined/      DeBERTa + keystroke features + time-point one-hot
+├── analysis/          descriptive statistics, correlations, agreement, plots
+├── results/           small CSV/XLSX summaries behind the paper tables
+├── docs/              keystroke variable codebooks / definitions
+├── data/              not committed (see data/README.md)
+└── COPY_LOG.md        origin of every file, skipped files, hardcoded paths, missing parts
+```
+
+## Pipeline (run in this order)
+
+| Step | Script | Output |
+|---|---|---|
+| 1 | `preprocessing/01_extract_keystroke_features.py` | `pisa_keylog_statistics(_normalised).csv` (full essays) |
+| 2 | `preprocessing/02_extract_features_at_timepoints.py` | text reconstruction + features at 5/10/15/20/25 min and full (`keylog_stats_*.csv`) |
+| 3 | `preprocessing/03_create_splits.py` | train/dev/test per time point and condition |
+| 4 | `preprocessing/04_split_check.py` | overlap check between splits (filename and user level) |
+| 5 | `preprocessing/05_combine_timepoints.py` | all time points stacked (`splits/combined/`) |
+| 6 | `preprocessing/06_create_hybrid_train.py` | hybrid training set (full text + one random snapshot per essay) |
+| 7 | `preprocessing/07_text_lookup_full.py` | `text_lookup.tsv` (full essays) |
+| 8 | `preprocessing/08_text_lookup_hybrid.py` | `text_hybrid_lookup.tsv` |
+| 9 | `preprocessing/09_text_lookup_all_timepoints.py` | `text_mega_lookup.tsv` (all 6 time points) |
+| — | `models/xgboost/xgboost_models.py`, `models/xgboost/ols_baseline.py` | process-feature models |
+| — | `models/deberta/train_deberta_full.py`, `models/deberta/train_deberta_hybrid.ipynb` | DeBERTa FULL / HYBRID |
+| — | `models/combined/train_deberta_combined.ipynb` | DeBERTa + keystroke features (COMBINED) |
+| — | `models/deberta/predict_evaluate.ipynb` | evaluation per time point and condition |
+
+Paths in the scripts are still the original ones (`BEA Paper/...`, `Originaldaten/...`);
+they are listed in `COPY_LOG.md`. The DeBERTa notebooks were run on Google Colab.
+
+## Paper table → script
+
+| Paper | Script | Result file |
+|---|---|---|
+| Table 1: descriptive statistics by condition | `analysis/descriptive_statistics.py` | `results/table1_descriptive_stats.csv` |
+| Table 2: score distribution across splits | `analysis/split_score_distribution.py`, `preprocessing/03_create_splits.py` | `results/table2_split_summary.csv` |
+| Table 3: hybrid training set | `preprocessing/06_create_hybrid_train.py` (printed only) | TODO |
+| 3.3.1 Silver standard (LR on 220 MEWS features) | TODO: training code missing; analysis: `silver_standard/analyse_silver_standard.py` | `results/sec3.3.1_silver_standard_summary.csv`, `silver_standard/mews_lr_model_results.md` |
+| 3.3.2 Gold standard (429 essays, α = 0.79, QWK silver vs gold = 0.76) | `analysis/gold_vs_silver_agreement.py` | `results/sec3.3.2_gold_vs_silver_agreement.csv` |
+| 3.4 Text snapshots at 5/10/15/20/25 min | `preprocessing/02_extract_features_at_timepoints.py`, `preprocessing/07–09_*` | `results/sec3.4_snapshot_summary.csv` |
+| Table 4: XGBoost QWK (ALL / LEN / NOLEN) | `models/xgboost/xgboost_models.py` | `results/table4_xgboost_results.csv`, `results/results_xgboost_ols.xlsx` |
+| Table 5: DeBERTa FULL / HYBRID / COMBINED | `models/deberta/*`, `models/combined/train_deberta_combined.ipynb` | `results/table5_*.csv`, `results/results_deberta.xlsx` |
+| Figures 2–4 | `analysis/plot_deberta_results.py` | reads `results/results_deberta.xlsx` |
+| Table 6: OLS baselines | `models/xgboost/ols_baseline.py` | `results/table6_ols_results.csv` |
+| Table 7: keystroke features | `preprocessing/01_extract_keystroke_features.py`, `preprocessing/02_*` | `docs/keystroke_variable_codebook.xlsx`, `docs/Keylog-Definitionen.xlsx`, `docs/keystroke_measures.xlsx` |
+| Table 8: Pearson r of features with length and score | `analysis/feature_correlations.py` | TODO: output not available |
+
+## Installation
+
+```
+pip install -r requirements.txt
+```
+
+---
+
+## Pipeline details
+
+The following description was the original README of this repository. Script names map as follows:
+`bea_01b_timesplit_stats.py` → `preprocessing/02_extract_features_at_timepoints.py`,
+`bea_02b_create_traindev.py` → `preprocessing/03_create_splits.py`,
+`bea_03_linreg.py` → `models/xgboost/ols_baseline.py`,
+`bea_00_statistics_for_paper.py` → `analysis/descriptive_statistics.py`.
+
+
 Scripts used to reproduce the process-feature extraction, data splitting, and
 linear regression baselines from the paper *"KEYSCORE — Keystroke-enhanced
 Automated Essay Scoring"* (BEA 2026), based on the PISA 2025 FLA writing
 process dataset.
 
-## Pipeline overview
+### Pipeline overview
 
 ```
 bea_01b_timesplit_stats.py   →   bea_02b_create_traindev.py   →   bea_03_linreg.py
@@ -18,7 +96,7 @@ bea_00_statistics_for_paper.py   →   descriptive statistics (paper Table 1)
 Run the three pipeline scripts in order. `bea_00_statistics_for_paper.py` is
 standalone and only needed to reproduce the descriptive stats table.
 
-## Input data format
+### Input data format
 
 Raw keystroke logs are expected as JSON event lists, one file per writing
 session, organized in per-condition folders (e.g. `..._advertisement`,
@@ -32,7 +110,7 @@ A `holistic.csv` with `filename` and `prediction` columns provides the
 
 ---
 
-## 1. `bea_01b_timesplit_stats.py` — Feature extraction
+### 1. `bea_01b_timesplit_stats.py` — Feature extraction
 
 Extracts **25 process features** across six behavioral dimensions from the
 raw keystroke logs, at multiple points during the writing session.
@@ -72,7 +150,7 @@ and `keylog_stats_{threshold}_normed.csv` (z-scored), for
 
 ---
 
-## 2. `bea_02b_create_traindev.py` — Train / dev / test splits
+### 2. `bea_02b_create_traindev.py` — Train / dev / test splits
 
 Builds train/dev/test splits per time threshold and per chat condition
 (`wo_chat`, `withchat`), using the normalized feature files from step 1.
@@ -91,7 +169,7 @@ plus a `split_summary.csv` with per-split sample counts.
 
 ---
 
-## 3. `bea_03_linreg.py` — Linear regression baselines
+### 3. `bea_03_linreg.py` — Linear regression baselines
 
 Trains and evaluates ordinary least squares regression models predicting
 the holistic score, across every threshold × condition combination.
@@ -117,7 +195,7 @@ threshold/condition/mode under `BEA Paper/models/`, plus a combined
 
 ---
 
-## 4. `bea_00_statistics_for_paper.py` — Descriptive statistics (standalone)
+### 4. `bea_00_statistics_for_paper.py` — Descriptive statistics (standalone)
 
 Reads the raw JSON logs directly (not the outputs of step 1–3) and produces
 the descriptive dataset table (paper Table 1): N, text length in
@@ -132,7 +210,7 @@ a ready-to-include `.tex` table.
 
 ---
 
-## Adapting to a new dataset
+### Adapting to a new dataset
 
 - Update `FOLDERS`, `DEFAULT_BASE_DIR`, and the folder-name parsing in
   `parse_folder_info()` to match your condition/task naming scheme.

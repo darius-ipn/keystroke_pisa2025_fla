@@ -1,0 +1,41 @@
+{
+  "model_name": "microsoft/deberta-v3-base",
+  "feature_cols": [
+    "total_writing_time",
+    "initial_pause",
+    "break_count",
+    "break_total_time",
+    "break_mean_duration",
+    "break_ratio",
+    "burst_count",
+    "burst_mean_length_char",
+    "burst_mean_duration",
+    "deletion_count",
+    "deletion_ratio",
+    "deletion_char_count",
+    "total_keystrokes",
+    "final_text_length_char",
+    "final_text_length_word",
+    "chars_per_minute",
+    "process_product_ratio",
+    "navigation_count",
+    "copy_paste_count",
+    "linearity_index",
+    "time_in_text_ms",
+    "time_in_task_text_ms",
+    "time_in_chat_ms",
+    "time_in_chat_prompt_ms",
+    "time_in_none_ms",
+    "target_switches"
+  ],
+  "timepoints": [
+    "05min",
+    "10min",
+    "15min",
+    "20min",
+    "25min",
+    "full"
+  ],
+  "hidden_size": 128,
+  "dropout": 0.1
+}

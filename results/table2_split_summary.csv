@@ -1,0 +1,13 @@
+threshold,condition,n_train,n_dev,n_test,n_total
+05min,Without Chat,1528,170,212,1910
+05min,With Chat,1577,176,217,1970
+10min,Without Chat,1528,170,212,1910
+10min,With Chat,1577,176,217,1970
+15min,Without Chat,1528,170,212,1910
+15min,With Chat,1577,176,217,1970
+20min,Without Chat,1528,170,212,1910
+20min,With Chat,1577,176,217,1970
+25min,Without Chat,1529,170,212,1911
+25min,With Chat,1577,176,217,1970
+full,Without Chat,1529,170,212,1911
+full,With Chat,1578,176,217,1971

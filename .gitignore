@@ -1,0 +1,24 @@
+# Data may not be published before September 2027 (see data/README.md)
+data/*
+!data/README.md
+
+# Model checkpoints / weights
+*.safetensors
+*.bin
+*.pt
+*.pth
+checkpoint-*/
+checkpoint_*/
+
+# Archives
+*.7z
+*.zip
+
+# Python / Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Secrets
+.env
+.env.*
